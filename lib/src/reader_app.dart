@@ -223,6 +223,7 @@ class _ReaderSurfaceState extends State<ReaderSurface>
   Timer? _bossKeyTriggerDebounceTimer;
   Future<void> _pointerScrollTask = Future<void>.value();
   final _textWrapper = ReaderTextWrapper();
+  List<String> Function(int)? _wrapSourceLine;
   bool _disposed = false;
   DateTime? _lastForegroundRecoveryAt;
   int? _lastOneLineSourceIndex;
@@ -608,25 +609,7 @@ class _ReaderSurfaceState extends State<ReaderSurface>
   }
 
   Future<bool> _advanceReadingPage() async {
-    final overlap = widget.controller.settings.pageWithoutOverlap ? 0 : 1;
-    final stepCount = math.max(1, _visibleVisualLineCapacity - overlap);
-    var movedAny = false;
-    var animated = false;
-    for (var index = 0; index < stepCount; index += 1) {
-      final moved = _advanceReadingInternal(animate: !animated);
-      if (!moved) {
-        break;
-      }
-      movedAny = true;
-      animated = true;
-      if (index < stepCount - 1) {
-        await WidgetsBinding.instance.endOfFrame;
-        if (!mounted) {
-          break;
-        }
-      }
-    }
-    return movedAny;
+    return _moveReadingPage(forward: true);
   }
 
   void _syncAutoPageTimer() {
@@ -689,22 +672,71 @@ class _ReaderSurfaceState extends State<ReaderSurface>
   }
 
   Future<void> _rewindReadingPage() async {
+    _moveReadingPage(forward: false);
+  }
+
+  bool _moveReadingPage({required bool forward}) {
+    final wrapSourceLine = _wrapSourceLine;
+    if (wrapSourceLine == null) return false;
+    final controller = widget.controller;
     final overlap = widget.controller.settings.pageWithoutOverlap ? 0 : 1;
     final stepCount = math.max(1, _visibleVisualLineCapacity - overlap);
-    var animated = false;
+    final oneLine = controller.settings.oneLineMode;
+    final initialSourceIndex = controller.currentLineIndex;
+    final initialSegmentIndex = oneLine
+        ? _oneLineSegmentIndex
+        : _multiLineSegmentIndex;
+    var sourceIndex = initialSourceIndex;
+    var segmentIndex = initialSegmentIndex.clamp(
+      0,
+      wrapSourceLine(sourceIndex).length - 1,
+    );
+
+    // Resolve the entire destination before updating state. Waiting for a
+    // frame after each visual line makes a page turn look like scrolling,
+    // even when text animations are disabled.
     for (var index = 0; index < stepCount; index += 1) {
-      final moved = _rewindReadingInternal(animate: !animated);
-      if (!moved) {
-        break;
-      }
-      animated = true;
-      if (index < stepCount - 1) {
-        await WidgetsBinding.instance.endOfFrame;
-        if (!mounted) {
+      if (forward) {
+        if (segmentIndex < wrapSourceLine(sourceIndex).length - 1) {
+          segmentIndex += 1;
+        } else if (sourceIndex < controller.totalLineCount - 1) {
+          sourceIndex += 1;
+          segmentIndex = 0;
+        } else {
           break;
         }
+      } else if (segmentIndex > 0) {
+        segmentIndex -= 1;
+      } else if (sourceIndex > 0) {
+        sourceIndex -= 1;
+        segmentIndex = wrapSourceLine(sourceIndex).length - 1;
+      } else {
+        break;
       }
     }
+    if (sourceIndex == initialSourceIndex &&
+        segmentIndex == initialSegmentIndex) {
+      return false;
+    }
+    _prepareReaderTransition(
+      forward
+          ? _ReaderTransitionDirection.forward
+          : _ReaderTransitionDirection.backward,
+      animate: controller.settings.readingAnimationEnabled,
+    );
+    setState(() {
+      if (oneLine) {
+        _lastOneLineSourceIndex = sourceIndex;
+        _oneLineSegmentIndex = segmentIndex;
+        _jumpToTailOnNextOneLineSource = false;
+      } else {
+        _lastMultiLineSourceIndex = sourceIndex;
+        _multiLineSegmentIndex = segmentIndex;
+        _jumpToTailOnNextMultiLineSource = false;
+      }
+      controller.moveByLines(sourceIndex - initialSourceIndex);
+    });
+    return true;
   }
 
   void _prepareReaderTransition(
@@ -1155,6 +1187,16 @@ class _ReaderSurfaceState extends State<ReaderSurface>
     required TextStyle style,
     required int visibleLineCapacity,
   }) {
+    final textDirection = Directionality.of(context);
+    final textScaler = MediaQuery.textScalerOf(context);
+    _wrapSourceLine = (index) => _wrapIntoSingleVisualLines(
+      text: widget.controller.lineAt(index),
+      maxWidth: maxWidth,
+      style: style,
+      textDirection: textDirection,
+      textScaler: textScaler,
+      preferPunctuationLineBreaks: settings.preferPunctuationLineBreaks,
+    );
     if (settings.oneLineMode) {
       _cachedMultiLineSourceSegments = const <String>[];
       _lastMultiLineSourceIndex = null;

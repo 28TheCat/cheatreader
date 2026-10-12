@@ -631,7 +631,8 @@ void main() {
     );
 
     await tester.sendKeyEvent(LogicalKeyboardKey.keyN);
-    await tester.pumpAndSettle();
+    // A page turn must reach its destination in the first rendered frame.
+    await tester.pump();
 
     expect(
       tester.widget<Text>(find.byType(Text).first).data,
@@ -639,7 +640,7 @@ void main() {
     );
 
     await tester.sendKeyEvent(LogicalKeyboardKey.keyP);
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     expect(
       tester.widget<Text>(find.byType(Text).first).data,
@@ -649,14 +650,14 @@ void main() {
     controller.setPageWithoutOverlap(true);
     await tester.pumpAndSettle();
     await tester.sendKeyEvent(LogicalKeyboardKey.keyN);
-    await tester.pumpAndSettle();
+    await tester.pump();
     expect(
       tester.widget<Text>(find.byType(Text).first).data,
       'LINE-6\nLINE-7\nLINE-8\nLINE-9\nLINE-10',
     );
 
     await tester.sendKeyEvent(LogicalKeyboardKey.keyP);
-    await tester.pumpAndSettle();
+    await tester.pump();
     expect(
       tester.widget<Text>(find.byType(Text).first).data,
       'LINE-1\nLINE-2\nLINE-3\nLINE-4\nLINE-5',
@@ -665,11 +666,62 @@ void main() {
     controller.setPageWithoutOverlap(false);
     await tester.pumpAndSettle();
     await tester.sendKeyEvent(LogicalKeyboardKey.keyN);
-    await tester.pumpAndSettle();
+    await tester.pump();
     expect(
       tester.widget<Text>(find.byType(Text).first).data,
       'LINE-5\nLINE-6\nLINE-7\nLINE-8\nLINE-9',
     );
+  });
+
+  testWidgets('wrapped pages refresh in one frame in both directions', (
+    WidgetTester tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(260, 132);
+    addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetPhysicalSize);
+
+    final controller = ReaderController(
+      initialContent:
+          '第一段\n第二段很长，需要在窄窗口中换行，并且翻页后仍应保留正确的阅读位置。'
+          '\n第三段也很长，需要继续换行，确保跨越段落时不会丢失正文，也不会逐行刷新。'
+          '\n第四段\n第五段\n第六段',
+      preferencesStore: MemoryReaderPreferencesStore(
+        initialSettings: ReaderSettings.defaults.copyWith(
+          lineSpacing: ReaderSettings.minLineSpacing,
+        ),
+      ),
+      windowController: _FakePlatformWindowController(),
+      fileBookmarkService: _FakeReaderFileBookmarkService(),
+      importService: _FakeReaderImportService(),
+      libraryStorage: MemoryReaderLibraryStorage(),
+    );
+    await controller.initialize();
+    await tester.pumpWidget(
+      CheatReaderApp(
+        controller: controller,
+        windowController: _FakePlatformWindowController(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    String displayedText() => tester.widget<Text>(find.byType(Text).first).data!;
+    final firstPage = displayedText();
+    expect(firstPage.split('\n').length, greaterThan(1));
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.pageDown);
+    await tester.pump();
+    final secondPage = displayedText();
+    expect(secondPage, isNot(firstPage));
+    expect(secondPage.split('\n').first, firstPage.split('\n').last);
+    await tester.pumpAndSettle();
+    expect(displayedText(), secondPage);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.pageUp);
+    await tester.pump();
+    expect(displayedText(), firstPage);
+    await tester.pumpAndSettle();
+    expect(displayedText(), firstPage);
   });
 
   testWidgets('can disable punctuation-preferred visual wrapping', (
