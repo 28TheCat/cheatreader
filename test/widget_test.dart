@@ -588,7 +588,7 @@ void main() {
     expect(find.textContaining('第三段'), findsNothing);
   });
 
-  testWidgets('custom page shortcuts keep one visual line of context', (
+  testWidgets('custom page shortcuts respect the no-overlap switch', (
     WidgetTester tester,
   ) async {
     tester.view.devicePixelRatio = 1;
@@ -644,6 +644,31 @@ void main() {
     expect(
       tester.widget<Text>(find.byType(Text).first).data,
       'LINE-1\nLINE-2\nLINE-3\nLINE-4\nLINE-5',
+    );
+
+    controller.setPageWithoutOverlap(true);
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyN);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.byType(Text).first).data,
+      'LINE-6\nLINE-7\nLINE-8\nLINE-9\nLINE-10',
+    );
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyP);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.byType(Text).first).data,
+      'LINE-1\nLINE-2\nLINE-3\nLINE-4\nLINE-5',
+    );
+
+    controller.setPageWithoutOverlap(false);
+    await tester.pumpAndSettle();
+    await tester.sendKeyEvent(LogicalKeyboardKey.keyN);
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<Text>(find.byType(Text).first).data,
+      'LINE-5\nLINE-6\nLINE-7\nLINE-8\nLINE-9',
     );
   });
 

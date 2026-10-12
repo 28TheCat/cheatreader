@@ -220,6 +220,8 @@
     }
   },
   "autoPageTitle": "Auto page-turn",
+  "pageWithoutOverlapTitle": "Full-page turns without overlap",
+  "pageWithoutOverlapSubtitle": "On: no repeated lines. Off: repeat one line. Applies to manual and automatic page turns.",
   "autoPageSubtitle": "Advance automatically on a timer",
   "autoPageIntervalLabel": "Page interval",
   "autoPageIntervalValue": "Every {seconds}s",

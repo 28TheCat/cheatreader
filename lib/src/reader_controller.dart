@@ -287,6 +287,10 @@ class ReaderController extends ChangeNotifier {
     _updateSettings(_settings.copyWith(autoPageEnabled: value));
   }
 
+  void setPageWithoutOverlap(bool value) {
+    _updateSettings(_settings.copyWith(pageWithoutOverlap: value));
+  }
+
   void setAutoPageIntervalSeconds(int value) {
     _updateSettings(
       _settings.copyWith(
@@ -593,6 +597,7 @@ class ReaderController extends ChangeNotifier {
         _settings.textBrightnessFactor == value.textBrightnessFactor &&
         _settings.shortcutBindings == value.shortcutBindings &&
         _settings.autoPageEnabled == value.autoPageEnabled &&
+        _settings.pageWithoutOverlap == value.pageWithoutOverlap &&
         _settings.autoPageIntervalSeconds == value.autoPageIntervalSeconds &&
         _settings.autoPageGranularity == value.autoPageGranularity) {
       return;

@@ -220,6 +220,8 @@
     }
   },
   "autoPageTitle": "自动翻页",
+  "pageWithoutOverlapTitle": "整页翻页不重复",
+  "pageWithoutOverlapSubtitle": "开启时不重复行，关闭时重复一行。适用于手动和自动整页翻页。",
   "autoPageSubtitle": "按设定间隔自动前进",
   "autoPageIntervalLabel": "翻页间隔",
   "autoPageIntervalValue": "每 {seconds} 秒",

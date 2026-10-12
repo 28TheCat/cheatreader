@@ -77,6 +77,7 @@ class SharedPreferencesReaderPreferencesStore extends ReaderPreferencesStore {
   static const _textBrightnessFactorKey = 'reader.textBrightnessFactor';
   static const _shortcutBindingsKey = 'reader.shortcutBindings';
   static const _autoPageEnabledKey = 'reader.autoPageEnabled';
+  static const _pageWithoutOverlapKey = 'reader.pageWithoutOverlap';
   static const _autoPageIntervalSecondsKey = 'reader.autoPageIntervalSeconds';
   static const _autoPageGranularityKey = 'reader.autoPageGranularity';
   static const _bookshelfKey = 'reader.bookshelf';
@@ -187,6 +188,9 @@ class SharedPreferencesReaderPreferencesStore extends ReaderPreferencesStore {
               ReaderSettings.defaults.textBrightnessFactor,
         ),
         shortcutBindings: _loadShortcutBindings(),
+        pageWithoutOverlap:
+            _preferences.getBool(_pageWithoutOverlapKey) ??
+            ReaderSettings.defaults.pageWithoutOverlap,
         autoPageEnabled:
             _preferences.getBool(_autoPageEnabledKey) ??
             ReaderSettings.defaults.autoPageEnabled,
@@ -325,6 +329,10 @@ class SharedPreferencesReaderPreferencesStore extends ReaderPreferencesStore {
       jsonEncode(settings.shortcutBindings.toJson()),
     );
     await _preferences.setBool(_autoPageEnabledKey, settings.autoPageEnabled);
+    await _preferences.setBool(
+      _pageWithoutOverlapKey,
+      settings.pageWithoutOverlap,
+    );
     await _preferences.setInt(
       _autoPageIntervalSecondsKey,
       _normalizeAutoPageInterval(settings.autoPageIntervalSeconds),

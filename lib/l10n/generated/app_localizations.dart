@@ -980,6 +980,12 @@ abstract class AppLocalizations {
   /// **'Auto page-turn'**
   String get autoPageTitle;
 
+  /// Label for full-page turns without overlapping lines.
+  String get pageWithoutOverlapTitle;
+
+  /// Explains how the full-page turn switch affects overlapping lines.
+  String get pageWithoutOverlapSubtitle;
+
   /// No description provided for @autoPageSubtitle.
   ///
   /// In en, this message translates to:

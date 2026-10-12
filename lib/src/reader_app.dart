@@ -608,7 +608,8 @@ class _ReaderSurfaceState extends State<ReaderSurface>
   }
 
   Future<bool> _advanceReadingPage() async {
-    final stepCount = math.max(1, _visibleVisualLineCapacity - 1);
+    final overlap = widget.controller.settings.pageWithoutOverlap ? 0 : 1;
+    final stepCount = math.max(1, _visibleVisualLineCapacity - overlap);
     var movedAny = false;
     var animated = false;
     for (var index = 0; index < stepCount; index += 1) {
@@ -688,7 +689,8 @@ class _ReaderSurfaceState extends State<ReaderSurface>
   }
 
   Future<void> _rewindReadingPage() async {
-    final stepCount = math.max(1, _visibleVisualLineCapacity - 1);
+    final overlap = widget.controller.settings.pageWithoutOverlap ? 0 : 1;
+    final stepCount = math.max(1, _visibleVisualLineCapacity - overlap);
     var animated = false;
     for (var index = 0; index < stepCount; index += 1) {
       final moved = _rewindReadingInternal(animate: !animated);
@@ -2081,6 +2083,13 @@ class _ReaderControlPanelState extends State<_ReaderControlPanel> {
         onChanged: controller.setPreferPunctuationLineBreaks,
         title: Text(l10n.punctuationLineBreaksTitle),
         subtitle: Text(l10n.punctuationLineBreaksSubtitle),
+      ),
+      SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        value: controller.settings.pageWithoutOverlap,
+        onChanged: controller.setPageWithoutOverlap,
+        title: Text(l10n.pageWithoutOverlapTitle),
+        subtitle: Text(l10n.pageWithoutOverlapSubtitle),
       ),
       SwitchListTile(
         contentPadding: EdgeInsets.zero,

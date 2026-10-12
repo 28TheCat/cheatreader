@@ -502,6 +502,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get autoPageTitle => 'Auto page-turn';
 
   @override
+  String get pageWithoutOverlapTitle => 'Full-page turns without overlap';
+
+  @override
+  String get pageWithoutOverlapSubtitle =>
+      'On: no repeated lines. Off: repeat one line. Applies to manual and automatic page turns.';
+
+  @override
   String get autoPageSubtitle => 'Advance automatically on a timer';
 
   @override

@@ -480,6 +480,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get autoPageTitle => '自动翻页';
 
   @override
+  String get pageWithoutOverlapTitle => '整页翻页不重复';
+
+  @override
+  String get pageWithoutOverlapSubtitle =>
+      '开启时不重复行，关闭时重复一行。适用于手动和自动整页翻页。';
+
+  @override
   String get autoPageSubtitle => '按设定间隔自动前进';
 
   @override

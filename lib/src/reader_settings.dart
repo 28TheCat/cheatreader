@@ -79,6 +79,7 @@ class ReaderSettings {
     required this.autoPageEnabled,
     required this.autoPageIntervalSeconds,
     required this.autoPageGranularity,
+    this.pageWithoutOverlap = false,
   });
 
   static const double minTextBrightnessFactor = 0.35;
@@ -154,6 +155,7 @@ class ReaderSettings {
   final bool autoPageEnabled;
   final int autoPageIntervalSeconds;
   final ReaderAutoPageGranularity autoPageGranularity;
+  final bool pageWithoutOverlap;
 
   static const Object _unset = Object();
 
@@ -185,6 +187,7 @@ class ReaderSettings {
     bool? autoPageEnabled,
     int? autoPageIntervalSeconds,
     ReaderAutoPageGranularity? autoPageGranularity,
+    bool? pageWithoutOverlap,
   }) {
     return ReaderSettings(
       oneLineMode: oneLineMode ?? this.oneLineMode,
@@ -226,6 +229,7 @@ class ReaderSettings {
       autoPageIntervalSeconds:
           autoPageIntervalSeconds ?? this.autoPageIntervalSeconds,
       autoPageGranularity: autoPageGranularity ?? this.autoPageGranularity,
+      pageWithoutOverlap: pageWithoutOverlap ?? this.pageWithoutOverlap,
     );
   }
 

@@ -395,6 +395,7 @@ void main() {
       await controller.initialize();
 
       expect(controller.settings.autoPageEnabled, isFalse);
+      expect(controller.settings.pageWithoutOverlap, isFalse);
       expect(
         controller.settings.autoPageIntervalSeconds,
         ReaderSettings.defaultAutoPageIntervalSeconds,
@@ -405,11 +406,13 @@ void main() {
       );
 
       controller.setAutoPageEnabled(true);
+      controller.setPageWithoutOverlap(true);
       controller.setAutoPageIntervalSeconds(99);
       controller.setAutoPageGranularity(ReaderAutoPageGranularity.line);
       await Future<void>.delayed(Duration.zero);
 
       expect(controller.settings.autoPageEnabled, isTrue);
+      expect(controller.settings.pageWithoutOverlap, isTrue);
       expect(
         controller.settings.autoPageIntervalSeconds,
         ReaderSettings.maxAutoPageIntervalSeconds,
@@ -427,6 +430,7 @@ void main() {
 
       final saved = await store.loadSnapshot();
       expect(saved.settings.autoPageEnabled, isTrue);
+      expect(saved.settings.pageWithoutOverlap, isTrue);
       expect(
         saved.settings.autoPageIntervalSeconds,
         ReaderSettings.minAutoPageIntervalSeconds,
@@ -912,6 +916,7 @@ void main() {
         autoPageEnabled: true,
         autoPageIntervalSeconds: 12,
         autoPageGranularity: ReaderAutoPageGranularity.line,
+        pageWithoutOverlap: true,
       );
 
       await store.saveSettings(settings);
@@ -955,6 +960,7 @@ void main() {
       expect(loaded.settings.textColorMode, ReaderTextColorMode.custom);
       expect(loaded.settings.customTextColorValue, 0xFF0F766E);
       expect(loaded.settings.autoPageEnabled, isTrue);
+      expect(loaded.settings.pageWithoutOverlap, isTrue);
       expect(loaded.settings.autoPageIntervalSeconds, 12);
       expect(
         loaded.settings.autoPageGranularity,
